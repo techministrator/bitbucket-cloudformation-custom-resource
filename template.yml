@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Template that creates CloudFormation Custom Resource to create BitBucket Repository 
+
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Name:
+    Type: String
+    Default: 'bitbucket-repo'
+
+Resources:
+  BitBucketRepoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${Name}-custom-resource
+      Runtime: python3.8
+      Timeout: 60
+      CodeUri: src/main/package
+      Handler: repository.handler
+      Role: !Sub ${BitBucketRepoFunctionExecutionRole.Arn}
+      Environment:
+        Variables:
+          ENABLE_SLACK_NOTI: 'No'
+
+  BitBucketRepoFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Name}-custom-resource-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: !Sub ${Name}-custom-resource-execution-role-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: AllowReadBitbucketSsmParams
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Effect: Allow
+                Resource:
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*

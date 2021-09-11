@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  WorkspaceId: 
+    Type: String
+    Description: 'BitBucket Workspace ID'
+    Default: 'luongquangit'
+
+Resources:
+  Repo:
+    Type: Custom::BitBucketRepository
+    # DeletionPolicy: Retain
+    # UpdateReplacePolicy: Retain
+    Properties:
+      # Change the below Service Token to match your Custom Resource Lambda ARN created from template.yml
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:bitbucket-repo-custom-resource'
+      RepoName: 'test-repo'
+      ProjectKey: 'TEST'
+      Description: Bitbucket Custom Resource Test
+      Private: True
+      MainBranch: 'master'
+      AdditionalBranches: ['develop']
+      DefaultReviewers: ['luong-quang-it', 'quangluong1993']
+      Privileges: 
+        - GroupOwner: !Ref WorkspaceId
+          GroupName: security-officers
+          Privilege: admin
+        - GroupOwner: !Ref WorkspaceId
+          GroupName: my-team
+          Privilege: write
+      BranchPermissionProfile: Default
+
+Outputs:
+  RepoName:
+    Description: 'Repo Name'
+    Value: !GetAtt Repo.Name
+  RepoUuid:
+    Description: 'Repo UUID'
+    Value: !GetAtt Repo.Uuid
+  RepoUrl:
+    Description: 'Repo URL'
+    Value: !GetAtt Repo.Url
+  RepoCloneUrl: 
+    Description: 'Repo Clone URL'
+    Value: !GetAtt Repo.CloneUrlHttp
+  RepoCloneSsh: 
+    Description: 'Repo Clone SSH'
+    Value: !GetAtt Repo.CloneUrlSsh
