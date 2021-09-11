@@ -55,7 +55,21 @@ By default, Slack Notification is disabled because it requires some configuratio
 
 ## Template Declaration
 
-BitBucket Repo CFN template will be used as the following: 
+Simple Example (Private Repo)
+
+```yaml
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  Repo:
+    Type: Custom::BitBucketRepository
+    Properties:
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::Region}:function:bitbucket-repo-custom-resource' # Created from template.yml
+      RepoName: 'test-repo'
+      ProjectKey: 'TEST'
+```
+
+Full Properties Example
 
 ```yaml
 AWSTemplateFormatVersion: "2010-09-09"
